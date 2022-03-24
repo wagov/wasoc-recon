@@ -31,7 +31,7 @@ steps:
       docker save -o $(Pipeline.Workspace)/docker/amass.tar caffix/amass
       docker save -o $(Pipeline.Workspace)/docker/azurecli.tar mcr.microsoft.com/azure-cli
     displayName: Docker save
-    condition: and(not(canceled()), eq(variables.CACHE_RESTORED, 'true'))
+    condition: and(not(canceled()), not(eq(variables.CACHE_RESTORED, 'true')))
 
   - script: |
       mkdir $(Pipeline.Workspace)/rumble
