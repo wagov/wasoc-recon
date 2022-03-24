@@ -14,7 +14,7 @@ steps:
   - task: Cache@2
     displayName: Cache task
     inputs:
-      key: 'docker | "$(Agent.OS)" | 20220324 | cache'
+      key: 'docker | "$(Agent.OS)" | cache'
       path: $(Pipeline.Workspace)/docker
       cacheHitVar: CACHE_RESTORED # Variable to set to 'true' when the cache is restored
     
@@ -34,8 +34,9 @@ steps:
     condition: not(eq(variables.CACHE_RESTORED, 'true'))
 
   - script: |
-      mkdir $(Pipeline.Workspace)/rumble
-      docker run --user $(id -u):$(id -g) -v $(Pipeline.Workspace)/rumble:/mnt/rumble mcr.microsoft.com/azure-cli az storage blob download-batch -d /mnt -s $(BLOB_CONTAINER) --connection-string "$(AZURE_STORAGE_CONNECTION_STRING)" --pattern rumble/*
+      mkdir $(Pipeline.Workspace)/rumble.tmp
+      docker run -v $(Pipeline.Workspace)/rumble.tmp:/mnt/rumble mcr.microsoft.com/azure-cli az storage blob download-batch -d /mnt -s $(BLOB_CONTAINER) --connection-string "$(AZURE_STORAGE_CONNECTION_STRING)" --pattern rumble/*
+      cp -ar $(Pipeline.Workspace)/rumble.tmp $(Pipeline.Workspace)/rumble # permissions workaround
       mv scan.py $(Pipeline.Workspace)/rumble/scan.py; cd $(Pipeline.Workspace)/rumble
       python3 scan.py
     displayName: 'Run owasp amass to enumerate subdomains and update scopes'
