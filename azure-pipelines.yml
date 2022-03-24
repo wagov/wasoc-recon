@@ -16,7 +16,7 @@ steps:
     inputs:
       key: 'docker | "$(Agent.OS)" | 20220324 | cache'
       path: $(Pipeline.Workspace)/docker
-      cacheHitVar: CACHE_RESTORED                #Variable to set to 'true' when the cache is restored
+      cacheHitVar: CACHE_RESTORED # Variable to set to 'true' when the cache is restored
     
   - script: |
       docker load -i $(Pipeline.Workspace)/docker/amass.tar
@@ -27,9 +27,6 @@ steps:
   - script: |
       docker pull caffix/amass
       docker pull mcr.microsoft.com/azure-cli
-    displayName: 'Pull docker images'
-
-  - script: |
       mkdir -p $(Pipeline.Workspace)/docker
       docker save -o $(Pipeline.Workspace)/docker/amass.tar caffix/amass
       docker save -o $(Pipeline.Workspace)/docker/azurecli.tar mcr.microsoft.com/azure-cli
