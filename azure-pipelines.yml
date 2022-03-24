@@ -11,6 +11,7 @@ pool:
 
 steps:
   - script: |
+      ls -l
       # Inject all env vars, mount workspace folder
       docker run -v $(Pipeline.Workspace):/mnt/rumble --env-file <( env| cut -f1 -d= ) mcr.microsoft.com/azure-cli bash -c "cd /mnt/rumble; chmod +x scan.py; ./scan.py"
     displayName: 'Run owasp amass to enumerate subdomains and update scopes'
