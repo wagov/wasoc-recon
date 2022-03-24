@@ -10,11 +10,35 @@ pool:
   vmImage: ubuntu-latest
 
 steps:
-- script: |
-    mkdir rumble
-    docker run -v $(PWD)/rumble:/rumble mcr.microsoft.com/azure-cli az storage blob download-batch -d /rumble -s $(BLOB_CONTAINER) --pattern rumble/*
-    mv scan.py rumble/scan.py; cd rumble; ./scan.py
-  displayName: 'Run owasp amass to enumerate subdomains and update scopes'
-  env:
-    AZURE_STORAGE_CONNECTION_STRING: $(AZURE_STORAGE_CONNECTION_STRING)
-    RUMBLE_API_TOKEN: $(RUMBLE_API_TOKEN)
+  # Cache docker images between builds perf test
+  - task: Cache@2
+    displayName: Cache task
+    inputs:
+      key: 'docker | "$(Agent.OS)" | 20220324 | cache'
+      path: $(Pipeline.Workspace)/docker
+      cacheHitVar: CACHE_RESTORED                #Variable to set to 'true' when the cache is restored
+    
+  - script: |
+      docker load -i $(Pipeline.Workspace)/docker/cache.tar
+    displayName: Docker restore
+    condition: and(not(canceled()), eq(variables.CACHE_RESTORED, 'true'))
+
+  - script: |
+      docker pull caffix/amass
+      docker pull mcr.microsoft.com/azure-cli
+    displayName: 'Pull docker images'
+
+  - script: |
+      mkdir -p $(Pipeline.Workspace)/docker
+      docker save -o $(Pipeline.Workspace)/docker/cache.tar cache
+    displayName: Docker save
+    condition: and(not(canceled()), or(failed(), ne(variables.CACHE_RESTORED, 'true')))
+
+  - script: |
+      mkdir rumble
+      docker run -v $(PWD)/rumble:/rumble mcr.microsoft.com/azure-cli az storage blob download-batch -d /rumble -s $(BLOB_CONTAINER) --connection-string $(AZURE_STORAGE_CONNECTION_STRING) --pattern rumble/*
+      mv scan.py rumble/scan.py; cd rumble; ./scan.py
+    displayName: 'Run owasp amass to enumerate subdomains and update scopes'
+    env:
+      AZURE_STORAGE_CONNECTION_STRING: $(AZURE_STORAGE_CONNECTION_STRING)
+      RUMBLE_API_TOKEN: $(RUMBLE_API_TOKEN)
