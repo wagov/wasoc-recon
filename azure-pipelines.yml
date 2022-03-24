@@ -10,9 +10,12 @@ pool:
   vmImage: ubuntu-latest
 
 steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
-
+- task: AzureCLI@2
+  inputs:
+    azureSubscription: 'Sentinel_Deploy_ServiceConnection_49d6d49bde16421ba2278d4d86ddfe54'
+    scriptType: 'batch'
+    scriptLocation: 'inlineScript'
+    inlineScript: 'az account list'
 - script: |
     echo Add other tasks to build, test, and deploy your project.
     echo See https://aka.ms/yaml
