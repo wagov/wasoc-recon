@@ -10,6 +10,9 @@ cwd = Path(__file__).resolve(strict=True).parent
 run(["az", "storage", "blob", "download-batch", "-d", cwd.parent, 
     "-s", os.environ["BLOB_CONTAINER"],  "--connection-string", os.environ["AZURE_STORAGE_CONNECTION_STRING"],
     "--pattern",  "rumble/*"])
+# Make amass executable
+run(["chmod", "+x", cwd/"amass"])
+
 
 RUMBLE_API_TOKEN = os.environ.get("RUMBLE_API_TOKEN", False)
 if not RUMBLE_API_TOKEN:
