@@ -11,7 +11,9 @@ pool:
 
 steps:
 - script: |
-    docker run mcr.microsoft.com/azure-cli az storage blob -h
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
+    docker run mcr.microsoft.com/azure-cli az storage blob download-batch -d rumble -s $(BLOB_CONTAINER) --pattern rumble/*
+    mv scan.py rumble/scan.py; cd rumble; ./scan.py
+  displayName: 'Run owasp amass to enumerate subdomains and update scopes'
+  env:
+    AZURE_STORAGE_CONNECTION_STRING: $(AZURE_STORAGE_CONNECTION_STRING)
+    RUMBLE_API_TOKEN: $(RUMBLE_API_TOKEN)
