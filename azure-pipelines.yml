@@ -19,7 +19,8 @@ steps:
       cacheHitVar: CACHE_RESTORED                #Variable to set to 'true' when the cache is restored
     
   - script: |
-      docker load -i $(Pipeline.Workspace)/docker/cache.tar
+      docker load -i $(Pipeline.Workspace)/docker/amass.tar
+      docker load -i $(Pipeline.Workspace)/docker/azurecli.tar
     displayName: Docker restore
     condition: and(not(canceled()), eq(variables.CACHE_RESTORED, 'true'))
 
@@ -30,7 +31,8 @@ steps:
 
   - script: |
       mkdir -p $(Pipeline.Workspace)/docker
-      docker save -o $(Pipeline.Workspace)/docker/cache.tar cache
+      docker save -o $(Pipeline.Workspace)/docker/amass.tar caffix/amass
+      docker save -o $(Pipeline.Workspace)/docker/azurecli.tar mcr.microsoft.com/azure-cli
     displayName: Docker save
     condition: and(not(canceled()), or(failed(), ne(variables.CACHE_RESTORED, 'true')))
 
