@@ -6,6 +6,11 @@ from time import time
 
 cwd = Path(__file__).resolve(strict=True).parent
 
+# Load cached data from Blob Storage
+run(["az", "storage", "blob", "download-batch", "-d", cwd.parent, 
+    "-s", os.environ["BLOB_CONTAINER"],  "--connection-string", os.environ["AZURE_STORAGE_CONNECTION_STRING"],
+    "--pattern",  "rumble/*"])
+
 RUMBLE_API_TOKEN = os.environ.get("RUMBLE_API_TOKEN", False)
 if not RUMBLE_API_TOKEN:
     exec((cwd / ".env").open().read())
@@ -66,7 +71,7 @@ for site in cwd.glob("inputs/*.domains.txt"):
     print(f"Enumerating {name} subdomains...")
     new = subdomains.with_suffix(".new")
     cmd = [
-        "amass",
+        cwd / "amass",
         "enum",
         "-active",
         "-df",

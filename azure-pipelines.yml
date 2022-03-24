@@ -12,8 +12,8 @@ pool:
 steps:
   - script: |
       mkdir $(Pipeline.Workspace)/rumble
-      docker run -v $(Pipeline.Workspace)/rumble:/mnt/rumble mcr.microsoft.com/azure-cli az storage blob download-batch -d /mnt -s $(BLOB_CONTAINER) --connection-string "$(AZURE_STORAGE_CONNECTION_STRING)" --pattern rumble/*
-      docker run -v $(Pipeline.Workspace)/rumble:/mnt/rumble caffix/amass bash -c "cd /mnt/rumble; python3 scan.py"
+      # Inject all env vars, mount workspace folder
+      docker run -v $(Pipeline.Workspace)/rumble:/mnt/rumble --env-file <( env| cut -f1 -d= ) mcr.microsoft.com/azure-cli bash -c "cd /mnt/rumble; chmod +x amass scan.py; ./scan.py"
     displayName: 'Run owasp amass to enumerate subdomains and update scopes'
     env:
       AZURE_STORAGE_CONNECTION_STRING: $(AZURE_STORAGE_CONNECTION_STRING)
