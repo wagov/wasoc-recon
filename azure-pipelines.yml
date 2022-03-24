@@ -11,7 +11,8 @@ pool:
 
 steps:
 - script: |
-    docker run mcr.microsoft.com/azure-cli az storage blob download-batch -d rumble -s $(BLOB_CONTAINER) --pattern rumble/*
+    mkdir rumble
+    docker run -v $(PWD)/rumble:/rumble mcr.microsoft.com/azure-cli az storage blob download-batch -d /rumble -s $(BLOB_CONTAINER) --pattern rumble/*
     mv scan.py rumble/scan.py; cd rumble; ./scan.py
   displayName: 'Run owasp amass to enumerate subdomains and update scopes'
   env:
