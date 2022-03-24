@@ -10,13 +10,8 @@ pool:
   vmImage: ubuntu-latest
 
 steps:
-- task: AzureCLI@2
-  inputs:
-    azureSubscription: ""
-    scriptType: 'bash'
-    scriptLocation: 'inlineScript'
-    inlineScript: 'az account list'
 - script: |
+    docker run mcr.microsoft.com/azure-cli az storage blob -h
     echo Add other tasks to build, test, and deploy your project.
     echo See https://aka.ms/yaml
   displayName: 'Run a multi-line script'
