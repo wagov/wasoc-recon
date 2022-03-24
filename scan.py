@@ -65,7 +65,7 @@ for site in cwd.glob("inputs/*.domains.txt"):
     subdomains = cwd / "outputs" / f"{name}.subdomains.txt"
     print(f"Enumerating {name} subdomains...")
     new = subdomains.with_suffix(".new")
-    cmd = ["docker", "run", "-v", f"{cwd}:{cwd}", "caffix/amass"
+    cmd = ["docker", "run", "-v", f"{cwd}:{cwd}", "caffix/amass",
         "amass",
         "enum",
         "-active",
