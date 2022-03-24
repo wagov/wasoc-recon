@@ -10,35 +10,10 @@ pool:
   vmImage: ubuntu-latest
 
 steps:
-  # Cache docker images between builds perf test
-  - task: Cache@2
-    displayName: Cache task
-    inputs:
-      key: 'docker | "$(Agent.OS)" | cache'
-      path: $(Pipeline.Workspace)/docker
-      cacheHitVar: CACHE_RESTORED # Variable to set to 'true' when the cache is restored
-    
   - script: |
-      docker load -i $(Pipeline.Workspace)/docker/amass.tar
-      docker load -i $(Pipeline.Workspace)/docker/azurecli.tar
-    displayName: Docker restore
-    condition: and(not(canceled()), eq(variables.CACHE_RESTORED, 'true'))
-
-  - script: |
-      docker pull caffix/amass
-      docker pull mcr.microsoft.com/azure-cli
-      mkdir -p $(Pipeline.Workspace)/docker
-      docker save -o $(Pipeline.Workspace)/docker/amass.tar caffix/amass
-      docker save -o $(Pipeline.Workspace)/docker/azurecli.tar mcr.microsoft.com/azure-cli
-    displayName: Docker save
-    condition: not(eq(variables.CACHE_RESTORED, 'true'))
-
-  - script: |
-      mkdir $(Pipeline.Workspace)/rumble.tmp
-      docker run -v $(Pipeline.Workspace)/rumble.tmp:/mnt/rumble mcr.microsoft.com/azure-cli az storage blob download-batch -d /mnt -s $(BLOB_CONTAINER) --connection-string "$(AZURE_STORAGE_CONNECTION_STRING)" --pattern rumble/*
-      cp -ar $(Pipeline.Workspace)/rumble.tmp $(Pipeline.Workspace)/rumble # permissions workaround
-      mv scan.py $(Pipeline.Workspace)/rumble/scan.py; cd $(Pipeline.Workspace)/rumble
-      python3 scan.py
+      mkdir $(Pipeline.Workspace)/rumble
+      docker run -v $(Pipeline.Workspace)/rumble:/mnt/rumble mcr.microsoft.com/azure-cli az storage blob download-batch -d /mnt -s $(BLOB_CONTAINER) --connection-string "$(AZURE_STORAGE_CONNECTION_STRING)" --pattern rumble/*
+      docker run -v $(Pipeline.Workspace)/rumble:/mnt/rumble caffix/amass bash -c "cd /mnt/rumble; python3 scan.py"
     displayName: 'Run owasp amass to enumerate subdomains and update scopes'
     env:
       AZURE_STORAGE_CONNECTION_STRING: $(AZURE_STORAGE_CONNECTION_STRING)
