@@ -34,13 +34,13 @@ steps:
       docker save -o $(Pipeline.Workspace)/docker/amass.tar caffix/amass
       docker save -o $(Pipeline.Workspace)/docker/azurecli.tar mcr.microsoft.com/azure-cli
     displayName: Docker save
-    condition: and(not(canceled()), or(failed(), ne(variables.CACHE_RESTORED, 'true')))
+    condition: and(not(canceled()), eq(variables.CACHE_RESTORED, 'true'))
 
   - script: |
-      mkdir rumble
-      echo docker run -v $(PWD)/rumble:/rumble mcr.microsoft.com/azure-cli az storage blob download-batch -d /rumble -s $(BLOB_CONTAINER) --connection-string $(AZURE_STORAGE_CONNECTION_STRING) --pattern rumble/*
-      docker run -v $(PWD)/rumble:/rumble mcr.microsoft.com/azure-cli az storage blob download-batch -d /rumble -s $(BLOB_CONTAINER) --connection-string $(AZURE_STORAGE_CONNECTION_STRING) --pattern rumble/*
-      mv scan.py rumble/scan.py; cd rumble; ./scan.py
+      mkdir $(Pipeline.Workspace)/rumble
+      docker run -v $(Pipeline.Workspace)/rumble:/rumble mcr.microsoft.com/azure-cli az storage blob download-batch -d /rumble -s $(BLOB_CONTAINER) --connection-string "$(AZURE_STORAGE_CONNECTION_STRING)" --pattern rumble/*
+      mv scan.py $(Pipeline.Workspace)/rumble/scan.py; cd $(Pipeline.Workspace)/rumble
+      ./scan.py
     displayName: 'Run owasp amass to enumerate subdomains and update scopes'
     env:
       AZURE_STORAGE_CONNECTION_STRING: $(AZURE_STORAGE_CONNECTION_STRING)
