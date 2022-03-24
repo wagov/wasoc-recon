@@ -12,7 +12,7 @@ pool:
 steps:
 - task: AzureCLI@2
   inputs:
-    azureSubscription: 'Sentinel_Deploy_ServiceConnection_49d6d49bde16421ba2278d4d86ddfe54'
+    azureSubscription: ""
     scriptType: 'bash'
     scriptLocation: 'inlineScript'
     inlineScript: 'az account list'
